@@ -10,14 +10,15 @@ RUN apk add --no-cache \
       build-base \
       openjpeg \
       tiff \
-      openblas-dev
+      openblas-dev \
+      linux-headers
 
-# Créer un virtualenv pour l'addon afin de contourner PEP 668
+# Créer un virtualenv pour l'addon
 RUN python3 -m venv /app/venv
 
 # Mettre à jour pip et installer les packages Python dans le virtualenv
 RUN /app/venv/bin/pip install --upgrade pip && \
-    /app/venv/bin/pip install pillow numpy RPi.GPIO smbus
+    /app/venv/bin/pip install pillow numpy RPi.GPIO smbus2
 
 # Copier tout le contenu de l'addon
 COPY . /app
@@ -25,4 +26,3 @@ WORKDIR /app
 
 # Lancer le script principal via le virtualenv
 CMD ["/app/venv/bin/python", "./bin/main.py"]
-
