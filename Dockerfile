@@ -1,23 +1,28 @@
-ARG BUILD_FROM
+# Base image Home Assistant pour Raspberry Pi 3B+ (armv7hf)
 ARG BUILD_FROM=ghcr.io/home-assistant/armv7hf-base:9.6.3
 FROM ${BUILD_FROM}
 
-# Install requirements for add-on
-RUN \
-  apk add --no-cache \
-    python3 \
-    openjpeg \
-    tiff \
-    openblas-dev \
-    py3-pip && \
-  pip install --no-cache-dir pillow && \
-  pip install --no-cache-dir numpy && \
-  pip3 install --no-cache-dir RPi.GPIO && \
-  pip3 install --no-cache-dir smbus
+# Installer dépendances système nécessaires
+RUN apk add --no-cache \
+      python3 \
+      python3-dev \
+      py3-pip \
+      build-base \
+      openjpeg \
+      tiff \
+      openblas-dev
 
+# Créer un virtualenv pour l'addon afin de contourner PEP 668
+RUN python3 -m venv /app/venv
+
+# Mettre à jour pip et installer les packages Python dans le virtualenv
+RUN /app/venv/bin/pip install --upgrade pip && \
+    /app/venv/bin/pip install pillow numpy RPi.GPIO smbus
+
+# Copier tout le contenu de l'addon
 COPY . /app
-
 WORKDIR /app
 
-CMD ["python", "./bin/main.py"]
+# Lancer le script principal via le virtualenv
+CMD ["/app/venv/bin/python", "./bin/main.py"]
 
